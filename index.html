@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLUB DE AMIGOS [Gestión de Área] - Dashboard Avanzado</title>
+    <title>CLUB DE AMIGOS - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -121,7 +121,8 @@
 
     <div class="header">
         <img src="https://www.clubdeamigos.org.ar/img/logo-header.png?i=111112" alt="Logo Club de Amigos" class="mx-auto h-20">
-        <p class="text-xl mt-4">Gestión de Requerimientos</p>
+        <p class="text-xl mt-4">CLUB DE AMIGOS</p>
+		<p class="text-xl mt-3">KPI - Facilities Manager</p>
     </div>
 
     <div class="container">
@@ -172,18 +173,18 @@
             </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            <div class="card"><h2 class="text-2xl font-semibold mb-4">Requerimientos por Categoría</h2><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
-            <div class="card"><h2 class="text-2xl font-semibold mb-4">Requerimientos por Estado</h2><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
-            <div class="card"><h2 class="text-2xl font-semibold mb-4">Requerimientos por Gerencia</h2><div class="chart-container"><canvas id="managementChart"></canvas></div></div>
-            <div class="card"><h2 class="text-2xl font-semibold mb-4">Requerimientos Mensuales</h2><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
-            <div class="card"><h2 class="text-2xl font-semibold mb-4">Requerimientos por Tipo</h2><div class="chart-container"><canvas id="typeChart"></canvas></div></div>
+            <div class="card"><h2 class="text-2xl font-semibold mb-4">Tickets por Categoría</h2><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
+            <div class="card"><h2 class="text-2xl font-semibold mb-4">Tickets por Estado</h2><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
+            <div class="card"><h2 class="text-2xl font-semibold mb-4">Tickets por Gerencia</h2><div class="chart-container"><canvas id="managementChart"></canvas></div></div>
+            <div class="card"><h2 class="text-2xl font-semibold mb-4">Tickets Mensuales</h2><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+            <div class="card"><h2 class="text-2xl font-semibold mb-4">Tickets por Tipo</h2><div class="chart-container"><canvas id="typeChart"></canvas></div></div>
             
-            <div class="card"><h2 class="text-2xl font-semibold mb-4">Requerimientos por Ubicación</h2><div class="chart-container"><canvas id="locationChart"></canvas></div></div>
-            <div class="card"><h2 class="text-2xl font-semibold mb-4">Requerimientos por Prioridad</h2><div class="chart-container"><canvas id="priorityChart"></canvas></div></div>
+            <div class="card"><h2 class="text-2xl font-semibold mb-4">Tickets por Ubicación</h2><div class="chart-container"><canvas id="locationChart"></canvas></div></div>
+            <div class="card"><h2 class="text-2xl font-semibold mb-4">Tickets por Prioridad</h2><div class="chart-container"><canvas id="priorityChart"></canvas></div></div>
             <div class="card"><h2 class="text-2xl font-semibold mb-4">Distribución por Avance</h2><div class="chart-container"><canvas id="progressChart"></canvas></div></div>
-            <div class="card"><h2 class="text-2xl font-semibold mb-4">Requerimientos por Sector</h2><div class="chart-container"><canvas id="sectorChart"></canvas></div></div>
+            <div class="card"><h2 class="text-2xl font-semibold mb-4">Tickets por Sector</h2><div class="chart-container"><canvas id="sectorChart"></canvas></div></div>
             
-            <div class="card lg:col-span-3"><h2 class="text-2xl font-semibold mb-4">Top 10 Requerimientos con Mayor Tiempo de Resolución (en días)</h2><div class="chart-container"><canvas id="resolutionTimeChart"></canvas></div></div>
+              <!--  <div class="card lg:col-span-3"><h2 class="text-2xl font-semibold mb-4">Top 10 Tickets con Mayor Tiempo de Resolución (en días)</h2><div class="chart-container"><canvas id="resolutionTimeChart"></canvas></div></div>  -->  
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
@@ -353,7 +354,6 @@
                 return true;
             });
             
-            // Usamos setTimeout para permitir que el overlay de "cargando" se renderice antes del trabajo pesado
             setTimeout(() => {
                 renderDashboard(currentFilteredData);
                 hideLoading();
@@ -370,7 +370,7 @@
         function updateKPIs(data) {
             const kpiGrid = document.getElementById('kpiGrid');
             if (data.length === 0) {
-                kpiGrid.innerHTML = '<div class="col-span-full text-center p-8 bg-white rounded-lg shadow-md"><h3>No hay datos para los filtros seleccionados.</h3><p>Por favor, ajuste los filtros o cargue un nuevo archivo.</p></div>';
+                kpiGrid.innerHTML = '<div class="lg:col-span-5 md:col-span-3 col-span-1 text-center p-8 bg-white rounded-lg shadow-md"><h3>No hay datos para los filtros seleccionados.</h3><p>Por favor, ajuste los filtros o cargue un nuevo archivo.</p></div>';
                 return;
             }
             const total = data.length;
@@ -414,23 +414,22 @@
             
             const countBy = (key) => data.reduce((acc, req) => { const value = req[key] || 'N/A'; acc[value] = (acc[value] || 0) + 1; return acc; }, {});
 
-            // Existentes
             updateChart(categoryChartInstance, 'categoryChart', 'bar', countBy('categoria'), commonBarOptions);
             updateChart(statusChartInstance, 'statusChart', 'pie', countBy('estado'), commonPieOptions, { colors: (labels) => labels.map(l => ({'Solucionado':'#28a745','Pendiente':'#ffc107','En Proceso':'#004A99','Cancelado':'#dc3545'}[l]||'#6c757d')) });
             updateChart(managementChartInstance, 'managementChart', 'doughnut', countBy('gerencia'), commonPieOptions, { palette: chartColorPalette });
             updateChart(monthlyChartInstance, 'monthlyChart', 'line', data.reduce((acc, req) => { if (req.parsedFechaIngreso) { const month = `${req.parsedFechaIngreso.getFullYear()}-${(req.parsedFechaIngreso.getMonth() + 1).toString().padStart(2, '0')}`; acc[month] = (acc[month] || 0) + 1; } return acc; }, {}), { ...commonBarOptions, scales: {y:{beginAtZero: true}}, elements: { line: { tension: 0.3, fill: true, backgroundColor: 'rgba(243, 122, 32, 0.2)', borderColor: '#F37A20' } } });
             updateChart(typeChartInstance, 'typeChart', 'pie', countBy('tipo'), commonPieOptions, { palette: chartColorPalette.slice().reverse() });
             
-            // Nuevos
             updateChart(locationChartInstance, 'locationChart', 'bar', countBy('ubicacion'), commonBarOptions, { palette: [chartColorPalette[1]]});
             updateChart(priorityChartInstance, 'priorityChart', 'pie', countBy('prioridad'), commonPieOptions, { colors: (labels) => labels.map(l => ({'Alta':'#dc3545','Media':'#ffc107','Baja':'#28a745'}[l]||'#6c757d')) });
             updateChart(sectorChartInstance, 'sectorChart', 'bar', countBy('sector'), commonBarOptions, { palette: [chartColorPalette[2]] });
+            
             updateProgressChart(data);
             updateResolutionTimeChart(data);
         }
 
         function updateChart(instance, canvasId, type, dataCounts, options, config = {}) {
-            destroyChart(instance);
+            if (instance) instance.destroy();
             const labels = Object.keys(dataCounts).sort((a,b) => (type === 'line' ? a.localeCompare(b) : dataCounts[b] - dataCounts[a]));
             const data = labels.map(label => dataCounts[label]);
             const chartData = {
@@ -442,11 +441,12 @@
                 }]
             };
             if(type === 'line') { Object.assign(chartData.datasets[0], options.elements.line); }
-            instance = new Chart(document.getElementById(canvasId), { type, data: chartData, options });
+            const chart = new Chart(document.getElementById(canvasId), { type, data: chartData, options });
+            eval(canvasId + "Instance = chart;"); // Asigna la nueva instancia a su variable global
         }
         
         function updateProgressChart(data) {
-            destroyChart(progressChartInstance);
+            if (progressChartInstance) progressChartInstance.destroy();
             const progressCounts = data.reduce((acc, req) => {
                 if (req.avance === 100) acc['Completado']++;
                 else if (req.avance > 0) acc['En Progreso']++;
@@ -468,12 +468,12 @@
         }
         
         function updateResolutionTimeChart(data) {
-            destroyChart(resolutionTimeChartInstance);
+            if (resolutionTimeChartInstance) resolutionTimeChartInstance.destroy();
             const resolvedWithDates = data
-                .filter(req => req.estado === 'Solucionado' && req.parsedFechaInicio && req.parsedFechaFin)
+                .filter(req => req.estado === 'Solucionado' && req.parsedFechaIngreso && req.parsedFechaFin)
                 .map(req => ({
                     ...req,
-                    duration: (req.parsedFechaFin - req.parsedFechaInicio) / (1000 * 60 * 60 * 24)
+                    duration: (req.parsedFechaFin - req.parsedFechaIngreso) / (1000 * 60 * 60 * 24)
                 }))
                 .filter(req => req.duration >= 0)
                 .sort((a, b) => b.duration - a.duration)
@@ -489,13 +489,74 @@
                         backgroundColor: '#004A99'
                     }]
                 },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#333', formatter: val => val.toFixed(1) + ' días' } } }
+                options: { indexAxis: 'y', onClick: handleChartClick, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#333', formatter: val => val.toFixed(1) + ' días' } } }
             });
         }
         
+        // --- LÓGICA DEL MODAL INTERACTIVO ---
+        function updateModalTable(dataToShow, title) {
+            const modal = document.getElementById("detailsModal");
+            document.getElementById("modalTitle").textContent = title;
+            const modalTableBody = document.querySelector('#modalTable tbody');
+            modalTableBody.innerHTML = ''; // Limpiar tabla anterior
+
+            if (dataToShow.length === 0) {
+                modalTableBody.innerHTML = `<tr><td colspan="15" class="text-center">No hay datos para mostrar.</td></tr>`;
+            } else {
+                dataToShow.forEach(req => {
+                    const row = modalTableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${req.fechaIngreso}</td><td>${req.ticket}</td><td>${req.asignadoA}</td>
+                        <td>${req.estado}</td><td>${req.prioridad}</td><td>${req.tipo}</td>
+                        <td>${req.categoria}</td><td>${req.ubicacion}</td><td>${req.sector}</td>
+                        <td>${req.solicitante}</td><td>${req.gerencia}</td><td>${req.descripcion}</td>
+                        <td>${req.fechaInicio}</td><td>${req.fechaFin}</td><td>${req.avance}</td>
+                    `;
+                });
+            }
+            modal.style.display = "flex";
+        }
+
         function handleChartClick(evt, elements, chart) {
-            // Lógica para mostrar modal con detalles (simplificada para brevedad)
-            console.log("Clic en gráfico detectado. Lógica de modal a implementar si se desea.");
+            if (elements.length === 0) return;
+
+            const clickedElementIndex = elements[0].index;
+            const label = chart.data.labels[clickedElementIndex];
+            let filteredDetails = [];
+            let modalChartTitle = "Detalles";
+            const chartId = chart.canvas.id;
+
+            // Casos especiales primero
+            if (chartId === 'resolutionTimeChart') {
+                const ticketNumber = label.replace('Ticket #', '');
+                filteredDetails = currentFilteredData.filter(req => req.ticket === ticketNumber);
+                modalChartTitle = `Detalles para el Ticket: ${label}`;
+            } else if (chartId === 'progressChart') {
+                modalChartTitle = `Detalles para Estado de Avance: ${label}`;
+                if (label === 'Completado') filteredDetails = currentFilteredData.filter(req => req.avance === 100);
+                else if (label === 'En Progreso') filteredDetails = currentFilteredData.filter(req => req.avance > 0 && req.avance < 100);
+                else filteredDetails = currentFilteredData.filter(req => req.avance === 0);
+            } else if (chartId === 'monthlyChart') {
+                 filteredDetails = currentFilteredData.filter(req => {
+                    if (!req.parsedFechaIngreso) return false;
+                    const monthYear = `${req.parsedFechaIngreso.getFullYear()}-${(req.parsedFechaIngreso.getMonth() + 1).toString().padStart(2, '0')}`;
+                    return monthYear === label;
+                });
+                modalChartTitle = `Detalles para el Mes: ${label}`;
+            } else {
+                // Casos genéricos
+                const keyMap = {
+                    'categoryChart': 'categoria', 'statusChart': 'estado', 'managementChart': 'gerencia',
+                    'typeChart': 'tipo', 'locationChart': 'ubicacion', 'priorityChart': 'prioridad', 'sectorChart': 'sector'
+                };
+                const dataKey = keyMap[chartId];
+                if (dataKey) {
+                    filteredDetails = currentFilteredData.filter(req => (req[dataKey] || 'N/A') === label);
+                    modalChartTitle = `Detalles para ${dataKey.charAt(0).toUpperCase() + dataKey.slice(1)}: ${label}`;
+                }
+            }
+            
+            updateModalTable(filteredDetails, modalChartTitle);
         }
 
     </script>
