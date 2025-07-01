@@ -9,6 +9,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* * Paleta de Colores Basada en el Logo
+         * Azul Primario: #004A99
+         * Naranja de Acento: #F37A20
+         * Fondos Claros: #f0f2f5
+         * Texto Principal: #333
+        */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f2f5;
@@ -27,12 +33,11 @@
             margin-bottom: 1.5rem;
         }
         .header {
-            background-color: #2c3e50;
-            color: #ffffff;
-            padding: 1.5rem;
-            border-bottom-left-radius: 1rem;
-            border-bottom-right-radius: 1rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #ffffff;
+            color: #004A99;
+            padding: 1rem;
+            border-bottom: 4px solid #F37A20;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
             margin-bottom: 2rem;
         }
@@ -42,7 +47,7 @@
             gap: 1.5rem;
         }
         .kpi-card {
-            background-color: #e0f7fa;
+            background-color: #e9ecef;
             border-radius: 0.75rem;
             padding: 1.25rem;
             text-align: center;
@@ -55,7 +60,7 @@
             background-color: #fff3cd;
         }
         .kpi-card.in-process {
-            background-color: #cce5ff;
+            background-color: #E6F0FA; /* Azul claro derivado del primario */
         }
         .kpi-card.cancelled {
             background-color: #f8d7da;
@@ -63,7 +68,7 @@
         .kpi-value {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #2c3e50;
+            color: #004A99; /* Azul Primario */
             margin-top: 0.5rem;
         }
         .kpi-label {
@@ -110,7 +115,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .file-input-button, .filter-button {
-            background-color: #3498db;
+            background-color: #F37A20; /* Naranja de Acento */
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
@@ -120,7 +125,7 @@
             margin: 0.5rem;
         }
         .file-input-button:hover, .filter-button:hover {
-            background-color: #2980b9;
+            background-color: #D9681C; /* Naranja más oscuro para hover */
         }
         .hidden-input {
             display: none;
@@ -148,7 +153,7 @@
             align-items: center;
             z-index: 1000;
             font-size: 1.5rem;
-            color: #2c3e50;
+            color: #004A99; /* Azul Primario */
             display: none;
         }
         .top-list ol {
@@ -161,7 +166,7 @@
             color: #555;
         }
         .top-list li strong {
-            color: #2c3e50;
+            color: #004A99; /* Azul Primario */
         }
 
         /* Modal Styles */
@@ -210,7 +215,7 @@
             font-size: 1.75rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: #2c3e50;
+            color: #004A99; /* Azul Primario */
         }
     </style>
 </head>
@@ -218,8 +223,8 @@
     <div class="loading-overlay" id="loadingOverlay">Cargando datos...</div>
 
     <div class="header">
-        <h1 class="text-4xl font-bold">CLUB DE AMIGOS</h1>
-        <p class="text-xl mt-2">Control de Gestión – Facilities Manager</p>
+        <img src="https://www.clubdeamigos.org.ar/img/logo-header.png?i=111112" alt="Logo Club de Amigos" class="mx-auto h-20">
+        <p class="text-xl mt-4">FACILITIES MANAGER - Control de Gestión </p>
     </div>
 
     <div class="container">
@@ -239,8 +244,7 @@
         </div>
 
         <div class="kpi-grid" id="kpiGrid">
-            <!-- KPIs will be dynamically loaded here -->
-        </div>
+            </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div class="card cursor-pointer" data-chart-type="category">
@@ -283,33 +287,27 @@
             <div class="card">
                 <h2 class="text-2xl font-semibold mb-4">Top 5 Solicitantes</h2>
                 <div id="topSolicitantes" class="top-list">
-                    <!-- Top Solicitantes will be dynamically loaded here -->
-                </div>
+                    </div>
             </div>
             <div class="card">
                 <h2 class="text-2xl font-semibold mb-4">Top 5 Categorías</h2>
                 <div id="topCategorias" class="top-list">
-                    <!-- Top Categorías will be dynamically loaded here -->
-                </div>
+                    </div>
             </div>
             <div class="card">
                 <h2 class="text-2xl font-semibold mb-4">Top 5 Asignados</h2>
                 <div id="topAsignados" class="top-list">
-                    <!-- Top Asignados will be dynamically loaded here -->
-                </div>
+                    </div>
             </div>
              <div class="card">
                 <h2 class="text-2xl font-semibold mb-4">Top 5 Ubicaciones</h2>
                 <div id="topUbicaciones" class="top-list">
-                    <!-- Top Ubicaciones will be dynamically loaded here -->
-                </div>
+                    </div>
             </div>
         </div>
     </div>
 
-    <!-- The Modal -->
     <div id="detailsModal" class="modal">
-        <!-- Modal content -->
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h3 id="modalTitle" class="modal-title">Detalles</h3>
@@ -335,8 +333,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Table rows will be dynamically loaded here -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -350,6 +347,9 @@
         let typeChartInstance = null; // New chart instance
         let allRequirementsData = []; // Store all parsed data
         let currentFilteredData = []; // Store currently filtered data
+
+        // Nueva paleta de colores para gráficos
+        const chartColorPalette = ['#004A99', '#F37A20', '#5DADE2', '#FAD7A0', '#48C9B0', '#A569BD', '#F1948A', '#7F8C8D'];
 
         document.addEventListener('DOMContentLoaded', () => {
             Chart.register(ChartDataLabels);
@@ -372,9 +372,6 @@
                     modal.style.display = "none";
                 }
             }
-
-            // No initial data load from hardcoded string
-            // The dashboard will be empty until a file is uploaded.
         });
 
         function showLoading() {
@@ -572,14 +569,14 @@
                 type: 'bar',
                 data: {
                     labels: categoryLabels,
-                    datasets: [{ label: 'Número de Requerimientos', data: categoryValues, backgroundColor: '#3498db', borderColor: '#2980b9', borderWidth: 1 }]
+                    datasets: [{ label: 'Número de Requerimientos', data: categoryValues, backgroundColor: '#004A99', borderColor: '#003366', borderWidth: 1 }]
                 },
                 options: { ...commonChartOptions,
                     scales: {
                         y: { beginAtZero: true, title: { display: true, text: 'Cantidad' } },
                         x: { title: { display: true, text: 'Categoría' } }
                     },
-                    plugins: { ...commonChartOptions.plugins, legend: { display: false } }
+                    plugins: { ...commonChartOptions.plugins, legend: { display: false }, datalabels: { display: false } }
                 }
             });
 
@@ -594,7 +591,7 @@
             const statusColors = statusLabels.map(label => {
                 switch (label) {
                     case 'Solucionado': return '#28a745'; case 'Pendiente': return '#ffc107';
-                    case 'En Proceso': return '#007bff'; case 'Cancelado': return '#dc3545';
+                    case 'En Proceso': return '#004A99'; case 'Cancelado': return '#dc3545';
                     default: return '#6c757d';
                 }
             });
@@ -623,7 +620,7 @@
                     datasets: [{
                         label: 'Requerimientos por Gerencia',
                         data: managementValues,
-                        backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#E91E63', '#9C27B0', '#00BCD4', '#FF9800', '#795548', '#607D8B', '#F44336'],
+                        backgroundColor: chartColorPalette,
                         hoverOffset: 4
                     }]
                 },
@@ -647,7 +644,7 @@
                 type: 'line',
                 data: {
                     labels: sortedMonths,
-                    datasets: [{ label: 'Número de Requerimientos', data: monthlyValues, backgroundColor: 'rgba(52, 152, 219, 0.2)', borderColor: '#3498db', borderWidth: 2, fill: true, tension: 0.4 }]
+                    datasets: [{ label: 'Número de Requerimientos', data: monthlyValues, backgroundColor: 'rgba(243, 122, 32, 0.2)', borderColor: '#F37A20', borderWidth: 2, fill: true, tension: 0.4 }]
                 },
                 options: {
                     responsive: true,
@@ -656,7 +653,7 @@
                         y: { beginAtZero: true, title: { display: true, text: 'Cantidad' } },
                         x: { title: { display: true, text: 'Mes' } }
                     },
-                    plugins: { legend: { display: false } },
+                    plugins: { legend: { display: false }, datalabels: { display: false } },
                     onClick: (e, elements, chart) => handleChartClick(e, elements, chart)
                 }
             });
@@ -670,14 +667,13 @@
             }, {});
             const typeLabels = Object.keys(typeCounts);
             const typeValues = Object.values(typeCounts);
-            const typeColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']; // Example colors
-
+            
             if (typeChartInstance) typeChartInstance.destroy();
             typeChartInstance = new Chart(document.getElementById('typeChart').getContext('2d'), {
                 type: 'pie',
                 data: {
                     labels: typeLabels,
-                    datasets: [{ label: 'Requerimientos por Tipo', data: typeValues, backgroundColor: typeColors, hoverOffset: 4 }]
+                    datasets: [{ label: 'Requerimientos por Tipo', data: typeValues, backgroundColor: chartColorPalette, hoverOffset: 4 }]
                 },
                 options: {
                     responsive: true,
@@ -803,11 +799,9 @@
         function attachChartClickEvents() {
             const chartCanvases = document.querySelectorAll('canvas');
             chartCanvases.forEach(canvas => {
-                // Ensure Chart.js already initialized the chart on this canvas
                 const chart = Chart.getChart(canvas);
                 if (chart) {
                     // Chart.js handles the click internally via its options.onClick
-                    // So we don't need a separate event listener here, just ensure onClick is set in options
                 }
             });
         }
