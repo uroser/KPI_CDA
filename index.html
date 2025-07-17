@@ -91,10 +91,27 @@
         }
         .kpi-card.clickable { cursor: pointer; }
         .kpi-card.clickable:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); }
+        
+        /* COLORES DE KPIs */
+        .kpi-card.total {
+            background-color: #d1e7fd; 
+            border-left: 5px solid #0d6efd; 
+        }
+        .kpi-card.total .kpi-value {
+            color: #0d6efd;
+        }
+        .kpi-card.effectiveness {
+            background-color: #dff0d8; 
+            border-left: 5px solid #198754; 
+        }
+        .kpi-card.effectiveness .kpi-value {
+            color: #198754;
+        }
         .kpi-card.solved { background-color: #d4edda; border-left: 5px solid #155724; }
         .kpi-card.pending { background-color: #fff3cd; border-left: 5px solid #856404; }
         .kpi-card.in-process { background-color: #E6F0FA; border-left: 5px solid #004A99; }
         .kpi-card.cancelled { background-color: #f8d7da; border-left: 5px solid #721c24; }
+        
         .kpi-value { font-size: 2.5rem; font-weight: 700; color: var(--color-primary); margin-top: 0.5rem; }
         .kpi-label { font-size: 1rem; color: #555; font-weight: 500;}
 
@@ -168,9 +185,10 @@
         .card.is-zoomed .zoom-icon {
             display: none;
         }
-
+        
+        /* COLOR CABECERAS MODAL */
         #modalTable thead th:nth-child(1),
-        #modalTable thead th:nth-child(13) {
+        #modalTable thead th:nth-child(14) {
             background-color: #dbeafe; /* Light blue */
             color: #1e3a8a;
         }
@@ -226,6 +244,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 items-end">
                 <div class="filter-group"><label for="startDate">Fecha Desde:</label><input type="date" id="startDate"></div>
                 <div class="filter-group"><label for="endDate">Fecha Hasta:</label><input type="date" id="endDate"></div>
+                <div class="filter-group"><label for="filterPeriod">Periodo:</label><select id="filterPeriod"></select></div>
                 <div class="filter-group"><label for="filterStatus">Estado:</label><select id="filterStatus"></select></div>
                 <div class="filter-group"><label for="filterAssignedTo">Asignado A:</label><select id="filterAssignedTo"></select></div>
                 <div class="filter-group"><label for="filterCategory">Categoría:</label><select id="filterCategory"></select></div>
@@ -251,6 +270,13 @@
                 <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Top 20 Tickets por Sector</h2><div class="chart-container"><canvas id="sectorChart"></canvas></div></div>
                 <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets Mensuales</h2><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
                 <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Top 10 Requerimientos con Mayor Tiempo de Resolución (en días)</h2><div class="chart-container"><canvas id="resolutionTimeChart"></canvas></div></div>
+                <div class="card lg:col-span-2">
+                    <div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div>
+                    <h2 class="text-xl font-semibold mb-4">Top 20 Solicitantes</h2>
+                    <div class="chart-container-large">
+                        <canvas id="topRequestersChart"></canvas>
+                    </div>
+                </div>
                 <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Total de Tickets por Colaborador</h2><div class="chart-container-large"><canvas id="assignedToChart"></canvas></div></div>
             </div>
 
@@ -292,7 +318,7 @@
     <script>
         let categoryChartInstance, statusChartInstance, managementChartInstance, monthlyChartInstance,
             resolutionTimeChartInstance, assignedToChartInstance,
-            typeChartInstance, sectorChartInstance;
+            typeChartInstance, sectorChartInstance, topRequestersChartInstance;
 
         let allRequirementsData = [];
         let currentFilteredData = [];
@@ -314,6 +340,7 @@
             document.getElementById('toggleFiltersBtn').addEventListener('click', () => {
                 document.getElementById('filtersContainer').classList.toggle('open');
             });
+            document.getElementById('filterPeriod').addEventListener('change', handlePeriodChange);
 
             const detailsModal = document.getElementById("detailsModal");
             document.getElementById("closeDetailsModal").onclick = () => detailsModal.style.display = "none";
@@ -388,6 +415,24 @@
             reader.readAsText(file);
         }
 
+        function handlePeriodChange(event) {
+            const period = event.target.value;
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+
+            if (period) {
+                const [year, month] = period.split('-').map(Number);
+                const firstDay = new Date(Date.UTC(year, month - 1, 1));
+                const lastDay = new Date(Date.UTC(year, month, 0));
+
+                startDateInput.value = firstDay.toISOString().split('T')[0];
+                endDateInput.value = lastDay.toISOString().split('T')[0];
+            } else {
+                startDateInput.value = '';
+                endDateInput.value = '';
+            }
+        }
+
         function parseDate(dateString) {
             if (!dateString || dateString.trim() === '') return null;
             const parts = dateString.split(/[-/]/);
@@ -411,24 +456,24 @@
             allRequirementsData = Array.from(table.querySelectorAll('tbody tr')).map(row => {
                 const cells = Array.from(row.querySelectorAll('td'));
                 return {
-				fechaIngreso: cells[0]?.textContent.trim() || '',
-				ticket: cells[1]?.textContent.trim() || '',
-				asignadoA: cells[2]?.textContent.trim() || '',
-				estado: cells[3]?.textContent.trim() || '',
-				prioridad: cells[4]?.textContent.trim() || '',
-				tipo: cells[5]?.textContent.trim() || '',
-				categoria: cells[6]?.textContent.trim() || '',
-				ubicacion: cells[7]?.textContent.trim() || '',
-				sector: cells[8]?.textContent.trim() || '',
-				solicitante: cells[9]?.textContent.trim() || '',
-				gerencia: cells[10]?.textContent.trim() || '',
-				descripcion: cells[11]?.textContent.trim().replace(/<\/?p>/g, '') || '',
-				fechaInicio: cells[12]?.textContent.trim() || '', // <-- NUEVO
-				fechaFin: cells[13]?.textContent.trim() || '',      // <-- Índice actualizado de 12 a 13
-				avance: parseInt(cells[14]?.textContent.trim()) || 0, // <-- Índice actualizado de 13 a 14
-				parsedFechaIngreso: parseDate(cells[0]?.textContent.trim()),
-				parsedFechaFin: parseDate(cells[13]?.textContent.trim()) // <-- Índice actualizado de 12 a 13
-				};
+                    fechaIngreso: cells[0]?.textContent.trim() || '',
+                    ticket: cells[1]?.textContent.trim() || '',
+                    asignadoA: cells[2]?.textContent.trim() || '',
+                    estado: cells[3]?.textContent.trim() || '',
+                    prioridad: cells[4]?.textContent.trim() || '',
+                    tipo: cells[5]?.textContent.trim() || '',
+                    categoria: cells[6]?.textContent.trim() || '',
+                    ubicacion: cells[7]?.textContent.trim() || '',
+                    sector: cells[8]?.textContent.trim() || '',
+                    solicitante: cells[9]?.textContent.trim() || '',
+                    gerencia: cells[10]?.textContent.trim() || '',
+                    descripcion: cells[11]?.textContent.trim().replace(/<\/?p>/g, '') || '',
+                    fechaInicio: cells[12]?.textContent.trim() || '',
+                    fechaFin: cells[13]?.textContent.trim() || '',
+                    avance: parseInt(cells[14]?.textContent.trim()) || 0,
+                    parsedFechaIngreso: parseDate(cells[0]?.textContent.trim()),
+                    parsedFechaFin: parseDate(cells[13]?.textContent.trim())
+                };
             }).filter(row => row.fechaIngreso && row.parsedFechaIngreso);
 
             document.getElementById('filtersContainer').classList.add('open');
@@ -448,6 +493,20 @@
                 select.innerHTML = '<option value="">Todos</option>';
                 uniqueValues.forEach(value => { select.innerHTML += `<option value="${value}">${value}</option>`; });
             }
+
+            const periodSelect = document.getElementById('filterPeriod');
+            const periods = [...new Set(data.filter(d => d.parsedFechaIngreso).map(d => {
+                const date = d.parsedFechaIngreso;
+                return `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}`;
+            }))].sort().reverse();
+
+            periodSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            periods.forEach(period => {
+                const [year, month] = period.split('-');
+                const monthName = monthNames[parseInt(month, 10) - 1];
+                periodSelect.innerHTML += `<option value="${period}">${monthName} ${year}</option>`;
+            });
         }
 
         function clearFilters() {
@@ -491,6 +550,7 @@
             updateKPIs(data);
             updateAllCharts(data);
             updateTopLists(data);
+            updateTopRequestersChart(data);
         }
 
         function updateKPIs(data) {
@@ -518,14 +578,22 @@
                 'Solucionado': solvedTickets,
                 'Pendiente': data.filter(r => r.estado === 'Pendiente').length,
                 'En Proceso': data.filter(r => r.estado === 'En Proceso').length,
-				'Postpuesto': data.filter(r => r.estado === 'Postpuesto').length,
+                'Postpuesto': data.filter(r => r.estado === 'Postpuesto').length,
                 'Cancelado': data.filter(r => r.estado === 'Cancelado').length,
                 'Tasa de Efectividad': effectivenessRate,
                 'Promedio Diario': average
             };
 
-			const kpiClasses = { 'Solucionado': 'solved', 'Pendiente': 'pending', 'En Proceso': 'in-process', 'Cancelado': 'cancelled', 'Tasa de Efectividad': 'solved', 'Postpuesto': 'pending' }; 
-			const clickableKpis = ['Total', 'Solucionado', 'Pendiente', 'En Proceso', 'Cancelado', 'Postpuesto'];
+            const kpiClasses = { 
+                'Total': 'total',
+                'Tasa de Efectividad': 'effectiveness',
+                'Solucionado': 'solved', 
+                'Pendiente': 'pending', 
+                'En Proceso': 'in-process', 
+                'Cancelado': 'cancelled', 
+                'Postpuesto': 'pending'
+            };
+            const clickableKpis = ['Total', 'Solucionado', 'Pendiente', 'En Proceso', 'Cancelado', 'Postpuesto'];
             
             kpiGrid.innerHTML = Object.entries(kpiData).map(([key, value]) => `
                 <div class="kpi-card ${kpiClasses[key] || ''} ${clickableKpis.includes(key) ? 'clickable' : ''}" data-kpi-key="${key}">
@@ -569,14 +637,25 @@
             const countBy = (key) => data.reduce((acc, req) => { const value = req[key] || 'N/A'; acc[value] = (acc[value] || 0) + 1; return acc; }, {});
 
             categoryChartInstance = updateChart(categoryChartInstance, 'categoryChart', 'doughnut', countBy('categoria'), commonPieOptions, { palette: chartColorPalette });
-            statusChartInstance = updateChart(statusChartInstance, 'statusChart', 'doughnut', countBy('estado'), commonPieOptions, { colors: (labels) => labels.map(l => ({'Solucionado':'#28a745','Pendiente':'#ffc107','En Proceso':'#004A99','Cancelado':'#dc3545', 'Pospuesto':'#ffc107'}[l]||'#6c757d')) });
+            statusChartInstance = updateChart(statusChartInstance, 'statusChart', 'doughnut', countBy('estado'), commonPieOptions, { colors: (labels) => labels.map(l => ({'Solucionado':'#28a745','Pendiente':'#ffc107','En Proceso':'#004A99','Cancelado':'#dc3545', 'Postpuesto':'#ffc107'}[l]||'#6c757d')) });
             managementChartInstance = updateChart(managementChartInstance, 'managementChart', 'doughnut', countBy('gerencia'), commonPieOptions, { palette: chartColorPalette });
             typeChartInstance = updateChart(typeChartInstance, 'typeChart', 'doughnut', countBy('tipo'), commonPieOptions, { palette: chartColorPalette });
 
             const sectorCounts = countBy('sector');
             const sortedSectors = Object.entries(sectorCounts).sort(([, a], [, b]) => b - a).slice(0, 20);
             const top20SectorCounts = Object.fromEntries(sortedSectors);
-            sectorChartInstance = updateChart(sectorChartInstance, 'sectorChart', 'bar', top20SectorCounts, commonBarOptions, { palette: chartColorPalette });
+            sectorChartInstance = updateChart(sectorChartInstance, 'sectorChart', 'bar', top20SectorCounts, {
+                ...commonBarOptions, 
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        display: true,
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#333'
+                    }
+                }
+            }, { palette: chartColorPalette });
             
             const monthlyData = data.reduce((acc, req) => { if (req.parsedFechaIngreso) { const month = `${req.parsedFechaIngreso.getUTCFullYear()}-${(req.parsedFechaIngreso.getUTCMonth() + 1).toString().padStart(2, '0')}`; acc[month] = (acc[month] || 0) + 1; } return acc; }, {});
             const monthlyOptions = {
@@ -623,7 +702,7 @@
                 .filter(req => req.estado === 'Solucionado' && req.parsedFechaIngreso && req.parsedFechaFin)
                 .map(req => ({ ...req, duration: (req.parsedFechaFin - req.parsedFechaIngreso) / (1000 * 60 * 60 * 24) }))
                 .filter(req => req.duration >= 0).sort((a, b) => b.duration - a.duration).slice(0, 10);
-            resolutionTimeChartInstance = new Chart(document.getElementById('resolutionTimeChart'), { type: 'bar', data: { labels: resolvedWithDates.map(req => `Ticket #${req.ticket}`), datasets: [{ label: 'Días de resolución', data: resolvedWithDates.map(req => req.duration), backgroundColor: '#F37A20' }] }, options: { indexAxis: 'y', onClick: handleChartClick, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#333', formatter: val => val.toFixed(1) + ' días' } } } });
+            resolutionTimeChartInstance = new Chart(document.getElementById('resolutionTimeChart'), { type: 'bar', data: { labels: resolvedWithDates.map(req => `Ticket #${req.ticket}`), datasets: [{ label: 'Días de resolución', data: resolvedWithDates.map(req => req.duration), backgroundColor: '#F37A20' }] }, options: { indexAxis: 'y', onClick: handleChartClick, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#333', formatter: val => Math.round(val) + ' días' } } } });
         }
 
         function updateAssignedToChart(data) {
@@ -637,18 +716,65 @@
             const sortedData = sortedLabels.map(label => assignedCounts[label]);
             assignedToChartInstance = new Chart(document.getElementById('assignedToChart'), { type: 'bar', data: { labels: sortedLabels, datasets: [{ label: 'Requerimientos Asignados', data: sortedData, backgroundColor: '#004A99' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, onClick: handleChartClick, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#333', font: { weight: 'bold' }, formatter: value => value } }, scales: { x: { beginAtZero: true } } } });
         }
+        
+        function updateTopRequestersChart(data) {
+            if (topRequestersChartInstance) topRequestersChartInstance.destroy();
+            const requesterCounts = data.reduce((acc, req) => {
+                const requester = (req.solicitante || 'Desconocido').trim();
+                if (requester) {
+                    acc[requester] = (acc[requester] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            const sortedRequesters = Object.entries(requesterCounts)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 20);
+
+            const labels = sortedRequesters.map(entry => entry[0]);
+            const chartData = sortedRequesters.map(entry => entry[1]);
+
+            topRequestersChartInstance = new Chart(document.getElementById('topRequestersChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tickets Solicitados',
+                        data: chartData,
+                        backgroundColor: '#5DADE2'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: handleChartClick,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#333',
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+        }
 
         function updateModalTable(dataToShow, title) {
             const modal = document.getElementById("detailsModal");
             document.getElementById("modalTitle").textContent = title;
             const modalTableBody = document.querySelector('#modalTable tbody');
             
-            modalTableBody.innerHTML = dataToShow.length === 0 ? `<tr><td colspan="14" class="text-center">No hay datos para mostrar.</td></tr>`
+            modalTableBody.innerHTML = dataToShow.length === 0 ? `<tr><td colspan="15" class="text-center">No hay datos para mostrar.</td></tr>`
                 : dataToShow.map(req => {
                     let statusClass = '';
                     switch(req.estado) {
                         case 'Solucionado': statusClass = 'status-solved'; break;
                         case 'Pendiente': statusClass = 'status-pending'; break;
+                        case 'Postpuesto': statusClass = 'status-pending'; break;
                         case 'En Proceso': statusClass = 'status-in-process'; break;
                         case 'Cancelado': statusClass = 'status-cancelled'; break;
                     }
@@ -656,8 +782,7 @@
                         req.fechaIngreso, req.ticket, req.asignadoA, req.estado,
                         req.prioridad, req.tipo, req.categoria, req.ubicacion,
                         req.sector, req.solicitante, req.gerencia, req.descripcion,
-						req.fechaInicio,
-                        req.fechaFin, req.avance
+                        req.fechaInicio, req.fechaFin, req.avance
                     ];
                     const cells = rowData.map((cellData, index) => {
                         const isStatusCell = index === 3;
@@ -672,14 +797,13 @@
         function handleKpiClick(event) {
             const card = event.currentTarget;
             const kpiKey = card.dataset.kpiKey;
-            const clickableKpis = ['Total', 'Solucionado', 'Pendiente', 'En Proceso', 'Cancelado', 'No Asignado'];
+            const clickableKpis = ['Total', 'Solucionado', 'Pendiente', 'En Proceso', 'Cancelado', 'Postpuesto'];
 
             if (!kpiKey || !clickableKpis.includes(kpiKey)) return;
 
             let filteredDetails = [];
             switch(kpiKey) {
                 case 'Total': filteredDetails = currentFilteredData; break;
-                case 'No Asignado': filteredDetails = currentFilteredData.filter(r => !r.asignadoA || r.asignadoA.trim() === ''); break;
                 default: filteredDetails = currentFilteredData.filter(r => r.estado === kpiKey);
             }
             updateModalTable(filteredDetails, `Detalles para: ${kpiKey}`);
@@ -705,10 +829,15 @@
                 });
                 modalChartTitle = `Detalles para el Mes: ${label}`;
             } else {
-                const keyMap = { 'categoryChart': 'categoria', 'statusChart': 'estado', 'managementChart': 'gerencia', 'typeChart': 'tipo', 'sectorChart': 'sector', 'assignedToChart': 'asignadoA' };
+                const keyMap = { 
+                    'categoryChart': 'categoria', 'statusChart': 'estado', 
+                    'managementChart': 'gerencia', 'typeChart': 'tipo', 
+                    'sectorChart': 'sector', 'assignedToChart': 'asignadoA',
+                    'topRequestersChart': 'solicitante'
+                };
                 const dataKey = keyMap[chartId];
                 if (dataKey) {
-                    if (label === 'N/A') {
+                    if (label === 'N/A' || label === 'Desconocido') {
                         filteredDetails = currentFilteredData.filter(req => !req[dataKey] || req[dataKey].trim() === '');
                     } else if (dataKey === 'asignadoA' && label === 'No Asignado') {
                         filteredDetails = currentFilteredData.filter(req => !req.asignadoA || req.asignadoA.trim() === '');
