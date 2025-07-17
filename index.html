@@ -272,7 +272,7 @@
                         <tr>
                             <th>FECHA DE INGRESO</th><th>TICKET</th><th>ASIGNADO A</th><th>ESTADO</th><th>PRIORIDAD</th>
                             <th>TIPO</th><th>CATEGORIA</th><th>UBICACION</th><th>SECTOR</th><th>SOLICITANTE</th>
-                            <th>GERENCIA</th><th>DESCRIPCION</th><th>FECHA FIN</th><th>AVANCE (%)</th>
+                            <th>GERENCIA</th><th>DESCRIPCION</th><th>FECHA INICIO</th><th>FECHA FIN</th><th>AVANCE (%)</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -411,23 +411,24 @@
             allRequirementsData = Array.from(table.querySelectorAll('tbody tr')).map(row => {
                 const cells = Array.from(row.querySelectorAll('td'));
                 return {
-                    fechaIngreso: cells[0]?.textContent.trim() || '',
-                    ticket: cells[1]?.textContent.trim() || '',
-                    asignadoA: cells[2]?.textContent.trim() || '',
-                    estado: cells[3]?.textContent.trim() || '',
-                    prioridad: cells[4]?.textContent.trim() || '',
-                    tipo: cells[5]?.textContent.trim() || '',
-                    categoria: cells[6]?.textContent.trim() || '',
-                    ubicacion: cells[7]?.textContent.trim() || '',
-                    sector: cells[8]?.textContent.trim() || '',
-                    solicitante: cells[9]?.textContent.trim() || '',
-                    gerencia: cells[10]?.textContent.trim() || '',
-                    descripcion: cells[11]?.textContent.trim().replace(/<\/?p>/g, '') || '',
-                    fechaFin: cells[12]?.textContent.trim() || '',
-                    avance: parseInt(cells[13]?.textContent.trim()) || 0,
-                    parsedFechaIngreso: parseDate(cells[0]?.textContent.trim()),
-                    parsedFechaFin: parseDate(cells[12]?.textContent.trim())
-                };
+				fechaIngreso: cells[0]?.textContent.trim() || '',
+				ticket: cells[1]?.textContent.trim() || '',
+				asignadoA: cells[2]?.textContent.trim() || '',
+				estado: cells[3]?.textContent.trim() || '',
+				prioridad: cells[4]?.textContent.trim() || '',
+				tipo: cells[5]?.textContent.trim() || '',
+				categoria: cells[6]?.textContent.trim() || '',
+				ubicacion: cells[7]?.textContent.trim() || '',
+				sector: cells[8]?.textContent.trim() || '',
+				solicitante: cells[9]?.textContent.trim() || '',
+				gerencia: cells[10]?.textContent.trim() || '',
+				descripcion: cells[11]?.textContent.trim().replace(/<\/?p>/g, '') || '',
+				fechaInicio: cells[12]?.textContent.trim() || '', // <-- NUEVO
+				fechaFin: cells[13]?.textContent.trim() || '',      // <-- Índice actualizado de 12 a 13
+				avance: parseInt(cells[14]?.textContent.trim()) || 0, // <-- Índice actualizado de 13 a 14
+				parsedFechaIngreso: parseDate(cells[0]?.textContent.trim()),
+				parsedFechaFin: parseDate(cells[13]?.textContent.trim()) // <-- Índice actualizado de 12 a 13
+				};
             }).filter(row => row.fechaIngreso && row.parsedFechaIngreso);
 
             document.getElementById('filtersContainer').classList.add('open');
@@ -517,14 +518,14 @@
                 'Solucionado': solvedTickets,
                 'Pendiente': data.filter(r => r.estado === 'Pendiente').length,
                 'En Proceso': data.filter(r => r.estado === 'En Proceso').length,
+				'Postpuesto': data.filter(r => r.estado === 'Postpuesto').length,
                 'Cancelado': data.filter(r => r.estado === 'Cancelado').length,
                 'Tasa de Efectividad': effectivenessRate,
-                'No Asignado': data.filter(r => !r.asignadoA || r.asignadoA.trim() === '').length,
                 'Promedio Diario': average
             };
 
-            const kpiClasses = { 'Solucionado': 'solved', 'Pendiente': 'pending', 'En Proceso': 'in-process', 'Cancelado': 'cancelled', 'Tasa de Efectividad': 'solved' };
-            const clickableKpis = ['Total', 'Solucionado', 'Pendiente', 'En Proceso', 'Cancelado', 'No Asignado'];
+			const kpiClasses = { 'Solucionado': 'solved', 'Pendiente': 'pending', 'En Proceso': 'in-process', 'Cancelado': 'cancelled', 'Tasa de Efectividad': 'solved', 'Postpuesto': 'pending' }; 
+			const clickableKpis = ['Total', 'Solucionado', 'Pendiente', 'En Proceso', 'Cancelado', 'Postpuesto'];
             
             kpiGrid.innerHTML = Object.entries(kpiData).map(([key, value]) => `
                 <div class="kpi-card ${kpiClasses[key] || ''} ${clickableKpis.includes(key) ? 'clickable' : ''}" data-kpi-key="${key}">
@@ -655,6 +656,7 @@
                         req.fechaIngreso, req.ticket, req.asignadoA, req.estado,
                         req.prioridad, req.tipo, req.categoria, req.ubicacion,
                         req.sector, req.solicitante, req.gerencia, req.descripcion,
+						req.fechaInicio,
                         req.fechaFin, req.avance
                     ];
                     const cells = rowData.map((cellData, index) => {
