@@ -267,8 +267,9 @@
                 <div class="card"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Estado</h2><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
                 <div class="card"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Gerencia</h2><div class="chart-container"><canvas id="managementChart"></canvas></div></div>
                 <div class="card"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Tipo</h2><div class="chart-container"><canvas id="typeChart"></canvas></div></div>
-                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Top 20 Tickets por Sector</h2><div class="chart-container"><canvas id="sectorChart"></canvas></div></div>
-                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets Mensuales</h2><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Ubicación y Sector</h2><div class="chart-container-large"><canvas id="locationSectorChart"></canvas></div></div>
+                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets Mensuales por Estado</h2><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Día del Mes</h2><div class="chart-container-large"><canvas id="dailyTicketsByMonthChart"></canvas></div></div>
                 <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Top 10 Requerimientos con Mayor Tiempo de Resolución (en días)</h2><div class="chart-container"><canvas id="resolutionTimeChart"></canvas></div></div>
                 <div class="card lg:col-span-2">
                     <div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div>
@@ -317,13 +318,16 @@
 
     <script>
         let categoryChartInstance, statusChartInstance, managementChartInstance, monthlyChartInstance,
-            resolutionTimeChartInstance, assignedToChartInstance,
-            typeChartInstance, sectorChartInstance, topRequestersChartInstance;
+            resolutionTimeChartInstance, assignedToChartInstance, typeChartInstance, 
+            locationSectorChartInstance, topRequestersChartInstance, dailyTicketsByMonthChartInstance;
 
         let allRequirementsData = [];
         let currentFilteredData = [];
-        const chartColorPalette = ['#004A99', '#F37A20', '#5DADE2', '#FAD7A0', '#48C9B0', '#A569BD', '#F1948A', '#7F8C8D'];
-        
+        const chartColorPalette = ['#004A99', '#F37A20', '#5DADE2', '#FAD7A0', '#48C9B0', '#A569BD', '#F1948A', '#7F8C8D', '#2ECC71', '#E74C3C', '#3498DB', '#F1C40F', '#9B59B6', '#1ABC9C', '#D35400', '#C0392B'];
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const statusColors = {'Solucionado':'#28a745','Pendiente':'#ffc107','En Proceso':'#004A99','Cancelado':'#dc3545', 'Postpuesto':'#fd7e14', 'N/A': '#6c757d'};
+
+
         let zoomedElement = null;
         let originalParent = null;
         let originalNextSibling = null;
@@ -459,12 +463,12 @@
                     fechaIngreso: cells[0]?.textContent.trim() || '',
                     ticket: cells[1]?.textContent.trim() || '',
                     asignadoA: cells[2]?.textContent.trim() || '',
-                    estado: cells[3]?.textContent.trim() || '',
+                    estado: cells[3]?.textContent.trim() || 'N/A',
                     prioridad: cells[4]?.textContent.trim() || '',
                     tipo: cells[5]?.textContent.trim() || '',
                     categoria: cells[6]?.textContent.trim() || '',
-                    ubicacion: cells[7]?.textContent.trim() || '',
-                    sector: cells[8]?.textContent.trim() || '',
+                    ubicacion: cells[7]?.textContent.trim() || 'Sin Ubicación',
+                    sector: cells[8]?.textContent.trim() || 'Sin Sector',
                     solicitante: cells[9]?.textContent.trim() || '',
                     gerencia: cells[10]?.textContent.trim() || '',
                     descripcion: cells[11]?.textContent.trim().replace(/<\/?p>/g, '') || '',
@@ -501,7 +505,7 @@
             }))].sort().reverse();
 
             periodSelect.innerHTML = '<option value="">Seleccionar...</option>';
-            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            
             periods.forEach(period => {
                 const [year, month] = period.split('-');
                 const monthName = monthNames[parseInt(month, 10) - 1];
@@ -633,46 +637,16 @@
 
         function updateAllCharts(data) {
             const commonPieOptions = { responsive: true, maintainAspectRatio: false, onClick: handleChartClick, plugins: { legend: { position: 'right' }, datalabels: { formatter: (value, ctx) => { let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); let percentage = (value * 100 / sum).toFixed(1) + "%"; return percentage; }, color: '#fff' } } };
-            const commonBarOptions = { responsive: true, maintainAspectRatio: false, onClick: handleChartClick, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false }, datalabels: { display: false } } };
             const countBy = (key) => data.reduce((acc, req) => { const value = req[key] || 'N/A'; acc[value] = (acc[value] || 0) + 1; return acc; }, {});
 
             categoryChartInstance = updateChart(categoryChartInstance, 'categoryChart', 'doughnut', countBy('categoria'), commonPieOptions, { palette: chartColorPalette });
-            statusChartInstance = updateChart(statusChartInstance, 'statusChart', 'doughnut', countBy('estado'), commonPieOptions, { colors: (labels) => labels.map(l => ({'Solucionado':'#28a745','Pendiente':'#ffc107','En Proceso':'#004A99','Cancelado':'#dc3545', 'Postpuesto':'#ffc107'}[l]||'#6c757d')) });
+            statusChartInstance = updateChart(statusChartInstance, 'statusChart', 'doughnut', countBy('estado'), commonPieOptions, { colors: (labels) => labels.map(l => (statusColors[l] ||'#6c757d')) });
             managementChartInstance = updateChart(managementChartInstance, 'managementChart', 'doughnut', countBy('gerencia'), commonPieOptions, { palette: chartColorPalette });
             typeChartInstance = updateChart(typeChartInstance, 'typeChart', 'doughnut', countBy('tipo'), commonPieOptions, { palette: chartColorPalette });
 
-            const sectorCounts = countBy('sector');
-            const sortedSectors = Object.entries(sectorCounts).sort(([, a], [, b]) => b - a).slice(0, 20);
-            const top20SectorCounts = Object.fromEntries(sortedSectors);
-            sectorChartInstance = updateChart(sectorChartInstance, 'sectorChart', 'bar', top20SectorCounts, {
-                ...commonBarOptions, 
-                plugins: {
-                    legend: { display: false },
-                    datalabels: {
-                        display: true,
-                        anchor: 'end',
-                        align: 'top',
-                        color: '#333'
-                    }
-                }
-            }, { palette: chartColorPalette });
-            
-            const monthlyData = data.reduce((acc, req) => { if (req.parsedFechaIngreso) { const month = `${req.parsedFechaIngreso.getUTCFullYear()}-${(req.parsedFechaIngreso.getUTCMonth() + 1).toString().padStart(2, '0')}`; acc[month] = (acc[month] || 0) + 1; } return acc; }, {});
-            const monthlyOptions = {
-                ...commonBarOptions,
-                elements: { line: { tension: 0.3, fill: true, backgroundColor: 'rgba(243, 122, 32, 0.2)', borderColor: '#F37A20' } },
-                plugins: {
-                    ...commonBarOptions.plugins,
-                    datalabels: {
-                        display: true,
-                        anchor: 'end',
-                        align: 'top',
-                        color: '#333',
-                        font: { weight: 'bold' }
-                    }
-                }
-            };
-            monthlyChartInstance = updateChart(monthlyChartInstance, 'monthlyChart', 'line', monthlyData, monthlyOptions);
+            updateLocationSectorChart(data);
+            updateDailyTicketsByMonthChart(data);
+            updateMonthlyStatusChart(data);
             
             updateResolutionTimeChart(data);
             updateAssignedToChart(data);
@@ -690,10 +664,162 @@
                     backgroundColor: config.colors ? config.colors(labels) : (config.palette || chartColorPalette),
                 }]
             };
-            if(type === 'line' && options.elements?.line) {
-                Object.assign(chartData.datasets[0], options.elements.line);
-            }
             return new Chart(document.getElementById(canvasId), { type, data: chartData, options });
+        }
+        
+        function updateMonthlyStatusChart(data) {
+            if (monthlyChartInstance) {
+                monthlyChartInstance.destroy();
+            }
+
+            const dataByMonthStatus = data.reduce((acc, req) => {
+                if (!req.parsedFechaIngreso) return acc;
+                const monthKey = `${req.parsedFechaIngreso.getUTCFullYear()}-${(req.parsedFechaIngreso.getUTCMonth() + 1).toString().padStart(2, '0')}`;
+                const status = req.estado || 'N/A';
+                
+                if (!acc[monthKey]) acc[monthKey] = {};
+                if (!acc[monthKey][status]) acc[monthKey][status] = 0;
+                
+                acc[monthKey][status]++;
+                return acc;
+            }, {});
+
+            const allStatuses = [...new Set(data.map(d => d.estado || 'N/A'))];
+            const sortedMonths = Object.keys(dataByMonthStatus).sort();
+
+            const datasets = allStatuses.map(status => ({
+                label: status,
+                data: sortedMonths.map(month => dataByMonthStatus[month][status] || 0),
+                backgroundColor: statusColors[status] || '#6c757d'
+            }));
+
+            monthlyChartInstance = new Chart(document.getElementById('monthlyChart'), {
+                type: 'bar',
+                data: {
+                    labels: sortedMonths,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, onClick: handleChartClick,
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${context.raw}` } },
+                        datalabels: {
+                            color: 'black',
+                            font: { weight: 'bold' },
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value, context) => {
+                                let sum = 0;
+                                context.chart.data.datasets.forEach(dataset => {
+                                    sum += dataset.data[context.dataIndex];
+                                });
+                                return sum;
+                            },
+                            display: (context) => {
+                                let lastDatasetIndex = -1;
+                                for (let i = context.chart.data.datasets.length - 1; i >= 0; i--) {
+                                    if (context.chart.data.datasets[i].data[context.dataIndex] > 0) {
+                                        lastDatasetIndex = i;
+                                        break;
+                                    }
+                                }
+                                return context.datasetIndex === lastDatasetIndex;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        function updateLocationSectorChart(data) {
+            if (locationSectorChartInstance) {
+                locationSectorChartInstance.destroy();
+            }
+
+            const dataByLocationSector = data.reduce((acc, req) => {
+                const location = req.ubicacion || 'Sin Ubicación';
+                const sector = req.sector || 'Sin Sector';
+                if (!acc[location]) {
+                    acc[location] = {};
+                }
+                if (!acc[location][sector]) {
+                    acc[location][sector] = 0;
+                }
+                acc[location][sector]++;
+                return acc;
+            }, {});
+            
+            const allSectors = [...new Set(data.map(req => req.sector || 'Sin Sector'))].sort();
+            const locationTotals = Object.keys(dataByLocationSector).map(location => ({ location, total: Object.values(dataByLocationSector[location]).reduce((sum, count) => sum + count, 0) }));
+            locationTotals.sort((a, b) => b.total - a.total);
+            const sortedLocations = locationTotals.map(item => item.location);
+
+            const datasets = allSectors.map((sector, index) => ({
+                label: sector,
+                data: sortedLocations.map(location => dataByLocationSector[location][sector] || 0),
+                backgroundColor: chartColorPalette[index % chartColorPalette.length]
+            }));
+
+            locationSectorChartInstance = new Chart(document.getElementById('locationSectorChart'), {
+                type: 'bar',
+                data: { labels: sortedLocations, datasets: datasets },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, onClick: handleChartClick,
+                    plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { title: (context) => context[0].label, label: (context) => `${context.dataset.label}: ${context.raw}` } } },
+                    scales: { x: { stacked: true, beginAtZero: true }, y: { stacked: true } }
+                }
+            });
+        }
+
+        function updateDailyTicketsByMonthChart(data) {
+            if (dailyTicketsByMonthChartInstance) {
+                dailyTicketsByMonthChartInstance.destroy();
+            }
+
+            const dataByMonth = data.reduce((acc, req) => {
+                if (!req.parsedFechaIngreso) return acc;
+                const monthKey = `${req.parsedFechaIngreso.getUTCFullYear()}-${(req.parsedFechaIngreso.getUTCMonth() + 1).toString().padStart(2, '0')}`;
+                const day = req.parsedFechaIngreso.getUTCDate();
+                if (!acc[monthKey]) {
+                    acc[monthKey] = {};
+                }
+                acc[monthKey][day] = (acc[monthKey][day] || 0) + 1;
+                return acc;
+            }, {});
+
+            const datasets = Object.keys(dataByMonth).sort().map((monthKey, index) => {
+                const [year, month] = monthKey.split('-');
+                const monthLabel = `${monthNames[parseInt(month, 10) - 1]} ${year}`;
+                const dailyData = new Array(31).fill(0);
+                for (const day in dataByMonth[monthKey]) {
+                    dailyData[day - 1] = dataByMonth[monthKey][day];
+                }
+                const color = chartColorPalette[index % chartColorPalette.length];
+                return {
+                    label: monthLabel,
+                    data: dailyData,
+                    borderColor: color,
+                    backgroundColor: `${color}33`, // semi-transparent fill
+                    fill: false,
+                    tension: 0.1
+                };
+            });
+            
+            dailyTicketsByMonthChartInstance = new Chart(document.getElementById('dailyTicketsByMonthChart'), {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: 31 }, (_, i) => i + 1),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, onClick: handleChartClick,
+                    plugins: { legend: { position: 'top' }, datalabels: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
         }
 
         function updateResolutionTimeChart(data) {
@@ -736,28 +862,10 @@
 
             topRequestersChartInstance = new Chart(document.getElementById('topRequestersChart'), {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Tickets Solicitados',
-                        data: chartData,
-                        backgroundColor: '#5DADE2'
-                    }]
-                },
+                data: { labels: labels, datasets: [{ label: 'Tickets Solicitados', data: chartData, backgroundColor: '#5DADE2' }] },
                 options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    onClick: handleChartClick,
-                    plugins: {
-                        legend: { display: false },
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'end',
-                            color: '#333',
-                            font: { weight: 'bold' }
-                        }
-                    },
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, onClick: handleChartClick,
+                    plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#333', font: { weight: 'bold' } } },
                     scales: { x: { beginAtZero: true } }
                 }
             });
@@ -811,33 +919,54 @@
 
         function handleChartClick(evt, elements, chart) {
             if (elements.length === 0) return;
-            const { index } = elements[0];
+            const { index, datasetIndex } = elements[0];
             const label = chart.data.labels[index];
             const chartId = chart.canvas.id;
             let filteredDetails = [];
             let modalChartTitle = "Detalles";
 
-            if (chartId === 'resolutionTimeChart') {
+            if (chartId === 'monthlyChart') {
+                const monthYear = label;
+                const status = chart.data.datasets[datasetIndex].label;
+                 filteredDetails = currentFilteredData.filter(req => {
+                    if (!req.parsedFechaIngreso) return false;
+                    const reqMonthYear = `${req.parsedFechaIngreso.getUTCFullYear()}-${(req.parsedFechaIngreso.getUTCMonth() + 1).toString().padStart(2, '0')}`;
+                    const reqStatus = req.estado || 'N/A';
+                    return reqMonthYear === monthYear && reqStatus === status;
+                });
+                modalChartTitle = `Detalles para ${status} en ${monthYear}`;
+
+            } else if (chartId === 'dailyTicketsByMonthChart') {
+                const day = label;
+                const monthLabel = chart.data.datasets[datasetIndex].label; // "Enero 2024"
+                const [monthName, year] = monthLabel.split(' ');
+                const monthIndex = monthNames.indexOf(monthName);
+
+                filteredDetails = currentFilteredData.filter(req => {
+                    const reqDate = req.parsedFechaIngreso;
+                    return reqDate &&
+                           reqDate.getUTCFullYear() === parseInt(year) &&
+                           reqDate.getUTCMonth() === monthIndex &&
+                           reqDate.getUTCDate() === parseInt(day);
+                });
+                modalChartTitle = `Detalles para el ${day} de ${monthName} de ${year}`;
+
+            } else if (chartId === 'locationSectorChart') {
+                const location = label;
+                const sector = chart.data.datasets[datasetIndex].label;
+                filteredDetails = currentFilteredData.filter(req => (req.ubicacion || 'Sin Ubicación') === location && (req.sector || 'Sin Sector') === sector);
+                modalChartTitle = `Detalles para Ubicación: ${location} - Sector: ${sector}`;
+
+            } else if (chartId === 'resolutionTimeChart') {
                 const ticketNumber = label.replace('Ticket #', '');
                 filteredDetails = currentFilteredData.filter(req => req.ticket === ticketNumber);
                 modalChartTitle = `Detalles para el Ticket: ${label}`;
-            } else if (chartId === 'monthlyChart') {
-                filteredDetails = currentFilteredData.filter(req => {
-                    if (!req.parsedFechaIngreso) return false;
-                    const monthYear = `${req.parsedFechaIngreso.getUTCFullYear()}-${(req.parsedFechaIngreso.getUTCMonth() + 1).toString().padStart(2, '0')}`;
-                    return monthYear === label;
-                });
-                modalChartTitle = `Detalles para el Mes: ${label}`;
+
             } else {
-                const keyMap = { 
-                    'categoryChart': 'categoria', 'statusChart': 'estado', 
-                    'managementChart': 'gerencia', 'typeChart': 'tipo', 
-                    'sectorChart': 'sector', 'assignedToChart': 'asignadoA',
-                    'topRequestersChart': 'solicitante'
-                };
+                const keyMap = { 'categoryChart': 'categoria', 'statusChart': 'estado', 'managementChart': 'gerencia', 'typeChart': 'tipo', 'assignedToChart': 'asignadoA', 'topRequestersChart': 'solicitante' };
                 const dataKey = keyMap[chartId];
                 if (dataKey) {
-                    if (label === 'N/A' || label === 'Desconocido') {
+                    if (label === 'N/A' || label === 'Desconocido' || label === 'Sin Ubicación' || label === 'Sin Sector') {
                         filteredDetails = currentFilteredData.filter(req => !req[dataKey] || req[dataKey].trim() === '');
                     } else if (dataKey === 'asignadoA' && label === 'No Asignado') {
                         filteredDetails = currentFilteredData.filter(req => !req.asignadoA || req.asignadoA.trim() === '');
