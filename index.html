@@ -93,20 +93,10 @@
         .kpi-card.clickable:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); }
         
         /* COLORES DE KPIs */
-        .kpi-card.total {
-            background-color: #d1e7fd; 
-            border-left: 5px solid #0d6efd; 
-        }
-        .kpi-card.total .kpi-value {
-            color: #0d6efd;
-        }
-        .kpi-card.effectiveness {
-            background-color: #dff0d8; 
-            border-left: 5px solid #198754; 
-        }
-        .kpi-card.effectiveness .kpi-value {
-            color: #198754;
-        }
+        .kpi-card.total { background-color: #d1e7fd; border-left: 5px solid #0d6efd; }
+        .kpi-card.total .kpi-value { color: #0d6efd; }
+        .kpi-card.effectiveness { background-color: #dff0d8; border-left: 5px solid #198754; }
+        .kpi-card.effectiveness .kpi-value { color: #198754; }
         .kpi-card.solved { background-color: #d4edda; border-left: 5px solid #155724; }
         .kpi-card.pending { background-color: #fff3cd; border-left: 5px solid #856404; }
         .kpi-card.in-process { background-color: #E6F0FA; border-left: 5px solid #004A99; }
@@ -125,35 +115,27 @@
 
         /* Estilos de Filtros */
         #filtersContainer {
-            transition: all 0.4s ease-out;
-            max-height: 0;
-            overflow: hidden;
-            padding: 0;
-            border: none;
-            margin-bottom: 0;
+            transition: all 0.4s ease-out; max-height: 0; overflow: hidden;
+            padding: 0; border: none; margin-bottom: 0;
         }
         #filtersContainer.open {
-            max-height: 500px; 
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #e9ecef;
+            max-height: 500px; padding: 1.5rem;
+            margin-bottom: 1.5rem; border: 1px solid #e9ecef;
         }
         .filter-group { display: flex; flex-direction: column; }
         .filter-group label { margin-bottom: 0.25rem; font-weight: 600; font-size: 0.875rem; color: #4a5568; }
         .filter-group input, .filter-group select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 0.5rem; min-width: 150px; }
         
-        /* Icono de Zoom */
-        .zoom-icon {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #ccc;
+        /* Iconos de Tarjetas */
+        .card-icon {
+            font-size: 1.2rem; cursor: pointer; color: #ccc;
             transition: color 0.2s, transform 0.2s;
-            z-index: 10;
         }
-        .zoom-icon:hover { color: var(--color-primary); transform: scale(1.2); }
+        .card-icon:hover { color: var(--color-primary); transform: scale(1.2); }
+        .card-icon-group {
+            position: absolute; top: 10px; right: 15px;
+            display: flex; gap: 0.75rem; z-index: 10;
+        }
 
         /* Estilos Modales */
         .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
@@ -162,52 +144,35 @@
         .close-button { color: #aaa; position: absolute; top: 1rem; right: 1.5rem; font-size: 28px; font-weight: bold; cursor: pointer; z-index: 1002; }
         .modal-title { font-size: 1.75rem; font-weight: 600; margin-bottom: 1rem; color: var(--color-primary); }
         
-        #detailsModal { z-index: 1005; }
         #detailsModal .modal-content { width: 95vw; max-width: 95vw; }
+        #manageChartsModal .modal-content { width: 50vw; max-width: 600px; }
+        #hidden-charts-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid #eee; }
+        #hidden-charts-list button { background-color: #28a745; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; }
         
         #chartZoomModal .modal-content {
-            width: 90vw;
-            height: 90vh;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
+            width: 90vw; height: 90vh; padding: 1rem;
+            display: flex; flex-direction: column;
         }
-        #zoomModalContent {
-            flex-grow: 1;
-            position: relative;
-            display: flex;
-        }
-        .card.is-zoomed {
-            width: 100%;
-            height: 100%;
-            margin-bottom: 0;
-        }
-        .card.is-zoomed .zoom-icon {
-            display: none;
-        }
+        #zoomModalContent { flex-grow: 1; position: relative; display: flex; }
+        .card.is-zoomed { width: 100%; height: 100%; margin-bottom: 0; }
+        .card.is-zoomed .card-icon-group { display: none; }
         
-        /* COLOR CABECERAS MODAL */
+        /* Estilos de Tabla en Modal */
         #modalTable thead th:nth-child(1),
-        #modalTable thead th:nth-child(14) {
-            background-color: #dbeafe; /* Light blue */
-            color: #1e3a8a;
-        }
+        #modalTable thead th:nth-child(14) { background-color: #dbeafe; color: #1e3a8a; }
         #modalTable th:nth-child(12) { width: 30%; }
 
         .table-cell-content {
-            max-height: 7.5em; /* 1.5em line-height * 5 lines */
-            line-height: 1.5em;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 5;
-            -webkit-box-orient: vertical;
-            text-overflow: ellipsis;
+            max-height: 7.5em; line-height: 1.5em; overflow: hidden;
+            display: -webkit-box; -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical; text-overflow: ellipsis;
         }
         td.status-solved { background-color: #d4edda; }
         td.status-pending { background-color: #fff3cd; }
         td.status-in-process { background-color: #E6F0FA; }
         td.status-cancelled { background-color: #f8d7da; }
         
+        /* Estilos de Listas Top 5 */
         .top-list ol { list-style: decimal; padding-left: 1.5rem; }
         .top-list li { margin-bottom: 0.5rem; font-size: 1rem; color: #555; }
         .top-list li.clickable { cursor: pointer; padding: 0.25rem; border-radius: 0.25rem; }
@@ -229,19 +194,16 @@
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <button id="toggleFiltersBtn" class="action-button">
-                <i class="fas fa-filter mr-2"></i>Filtros
-            </button>
-            <label for="fileUpload" class="action-button bg-blue-600 hover:bg-blue-700">
-                <i class="fas fa-upload mr-2"></i>Cargar Archivo
-            </label>
+            <button id="toggleFiltersBtn" class="action-button"><i class="fas fa-filter mr-2"></i>Filtros</button>
+            <button id="manageChartsBtn" class="action-button bg-gray-600 hover:bg-gray-700"><i class="fas fa-chart-bar mr-2"></i>Administrar Gráficos</button>
+            <label for="fileUpload" class="action-button bg-blue-600 hover:bg-blue-700"><i class="fas fa-upload mr-2"></i>Cargar Archivo</label>
             <input type="file" id="fileUpload" accept=".html" class="hidden">
         </div>
     </header>
 
     <div class="container-main">
         <div id="filtersContainer" class="card">
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 items-end">
+             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 items-end">
                 <div class="filter-group"><label for="startDate">Fecha Desde:</label><input type="date" id="startDate"></div>
                 <div class="filter-group"><label for="endDate">Fecha Hasta:</label><input type="date" id="endDate"></div>
                 <div class="filter-group"><label for="filterPeriod">Periodo:</label><select id="filterPeriod"></select></div>
@@ -262,23 +224,23 @@
                 <div class="kpi-grid" id="kpiGrid"></div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                <div class="card"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Categoría</h2><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
-                <div class="card"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Estado</h2><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
-                <div class="card"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Gerencia</h2><div class="chart-container"><canvas id="managementChart"></canvas></div></div>
-                <div class="card"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Tipo</h2><div class="chart-container"><canvas id="typeChart"></canvas></div></div>
-                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Ubicación y Sector</h2><div class="chart-container-large"><canvas id="locationSectorChart"></canvas></div></div>
-                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets Mensuales por Estado</h2><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
-                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Día del Mes</h2><div class="chart-container-large"><canvas id="dailyTicketsByMonthChart"></canvas></div></div>
-                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Top 10 Requerimientos con Mayor Tiempo de Resolución (en días)</h2><div class="chart-container"><canvas id="resolutionTimeChart"></canvas></div></div>
-                <div class="card lg:col-span-2">
-                    <div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6" id="chartsGrid">
+                <div class="card" id="card-categoryChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Categoría</h2><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
+                <div class="card" id="card-statusChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Estado</h2><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
+                <div class="card" id="card-managementChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Gerencia</h2><div class="chart-container"><canvas id="managementChart"></canvas></div></div>
+                <div class="card" id="card-typeChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Tipo</h2><div class="chart-container"><canvas id="typeChart"></canvas></div></div>
+                <div class="card lg:col-span-2" id="card-locationSectorChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Ubicación y Sector</h2><div class="chart-container-large"><canvas id="locationSectorChart"></canvas></div></div>
+                <div class="card lg:col-span-2" id="card-monthlyChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Tickets Mensuales por Estado</h2><div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+                <div class="card lg:col-span-2" id="card-dailyTicketsByMonthChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Tickets por Día del Mes</h2><div class="chart-container-large"><canvas id="dailyTicketsByMonthChart"></canvas></div></div>
+                <div class="card lg:col-span-2" id="card-resolutionTimeChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Top 10 Requerimientos con Mayor Tiempo de Resolución (en días)</h2><div class="chart-container"><canvas id="resolutionTimeChart"></canvas></div></div>
+                <div class="card lg:col-span-2" id="card-topRequestersChart">
+                    <div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div>
                     <h2 class="text-xl font-semibold mb-4">Top 20 Solicitantes</h2>
                     <div class="chart-container-large">
                         <canvas id="topRequestersChart"></canvas>
                     </div>
                 </div>
-                <div class="card lg:col-span-2"><div class="zoom-icon" title="Agrandar gráfico"><i class="fas fa-expand-alt"></i></div><h2 class="text-xl font-semibold mb-4">Total de Tickets por Colaborador</h2><div class="chart-container-large"><canvas id="assignedToChart"></canvas></div></div>
+                <div class="card lg:col-span-2" id="card-assignedToChart"><div class="card-icon-group"><i class="fas fa-eye-slash card-icon hide-chart-icon" title="Ocultar gráfico"></i><i class="fas fa-expand-alt card-icon zoom-icon" title="Agrandar gráfico"></i></div><h2 class="text-xl font-semibold mb-4">Total de Tickets por Colaborador</h2><div class="chart-container-large"><canvas id="assignedToChart"></canvas></div></div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
@@ -311,10 +273,76 @@
     <div id="chartZoomModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeChartZoomModal">&times;</span>
-            <div id="zoomModalContent">
+            <div id="zoomModalContent"></div>
+        </div>
+    </div>
+
+    <div id="manageChartsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeManageChartsModal">&times;</span>
+            <h3 class="modal-title">Administrar Gráficos Visibles</h3>
+            <div id="hidden-charts-list">
+                <p>No hay gráficos ocultos.</p>
             </div>
         </div>
     </div>
+
+<footer class="bg-gray-800 text-white text-center p-6 mt-10">
+  <p class="text-lg italic text-gray-300">
+    "El mayor valor de una imagen es cuando nos obliga a notar lo que nunca esperamos ver."
+  </p>
+  <p class="text-sm text-gray-400 mt-1">- John Tukey -</p>
+
+  <div class="border-t border-gray-700 w-1/4 mx-auto my-4"></div>
+
+  <div class="flex flex-col items-center gap-2 mb-4">
+    <div class="flex flex-wrap justify-center items-center gap-3 text-sm text-gray-300">
+     
+      <a
+        class="libutton"
+        href="https://www.linkedin.com/comm/mynetwork/discovery-see-all?usecase=PEOPLE_FOLLOWS&followMember=ulises-roser"
+        target="_blank"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="16" height="16" style="margin-right: 6px;">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.327-.024-3.037-1.85-3.037-1.853 0-2.136 1.447-2.136 2.941v5.665H9.352V9h3.414v1.561h.048c.476-.9 1.637-1.85 3.368-1.85 3.601 0 4.266 2.37 4.266 5.455v6.286zM5.337 7.433a2.065 2.065 0 1 1 0-4.13 2.065 2.065 0 0 1 0 4.13zM6.792 20.452H3.882V9h2.91v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.226.792 24 1.771 24h20.451C23.2 24 24 23.226 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/>
+        </svg>
+      <span>&copy; 2025 | <span class="font-semibold">Ulises Roser</span></span>
+      </a>
+    </div>
+
+    <p class="text-sm text-gray-300">Dashboard de Facilities v1.0</p>
+  </div>
+
+  <p class="text-xs text-gray-500 mt-1">
+    Desarrollado con HTML, Tailwind CSS, JavaScript & Chart.js
+  </p>
+
+  <style>
+    .libutton {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      text-align: center;
+      text-decoration: none !important;
+      color: #ffffff !important;
+      border-radius: 16px;
+      background-color: #0A66C2;
+      font-family: "SF Pro Text", Helvetica, sans-serif;
+      font-size: 13px;
+      height: 30px;
+      transition: background-color 0.3s ease;
+    }
+
+    .libutton:hover {
+      background-color: #084b99;
+    }
+  </style>
+</footer>
+
+
+
+
 
     <script>
         let categoryChartInstance, statusChartInstance, managementChartInstance, monthlyChartInstance,
@@ -326,7 +354,6 @@
         const chartColorPalette = ['#004A99', '#F37A20', '#5DADE2', '#FAD7A0', '#48C9B0', '#A569BD', '#F1948A', '#7F8C8D', '#2ECC71', '#E74C3C', '#3498DB', '#F1C40F', '#9B59B6', '#1ABC9C', '#D35400', '#C0392B'];
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const statusColors = {'Solucionado':'#28a745','Pendiente':'#ffc107','En Proceso':'#004A99','Cancelado':'#dc3545', 'Postpuesto':'#fd7e14', 'N/A': '#6c757d'};
-
 
         let zoomedElement = null;
         let originalParent = null;
@@ -345,25 +372,82 @@
                 document.getElementById('filtersContainer').classList.toggle('open');
             });
             document.getElementById('filterPeriod').addEventListener('change', handlePeriodChange);
-
-            const detailsModal = document.getElementById("detailsModal");
-            document.getElementById("closeDetailsModal").onclick = () => detailsModal.style.display = "none";
             
+            // Listeners para Modales
+            const detailsModal = document.getElementById("detailsModal");
             const chartZoomModal = document.getElementById("chartZoomModal");
+            const manageChartsModal = document.getElementById("manageChartsModal");
+            
+            document.getElementById("closeDetailsModal").onclick = () => { detailsModal.style.display = "none"; };
             document.getElementById("closeChartZoomModal").onclick = closeZoomModal;
+            document.getElementById("closeManageChartsModal").onclick = () => { manageChartsModal.style.display = "none"; };
+            document.getElementById("manageChartsBtn").onclick = openManageChartsModal;
 
             window.onclick = (event) => {
                 if (event.target == detailsModal) detailsModal.style.display = "none";
                 if (event.target == chartZoomModal) closeZoomModal();
+                if (event.target == manageChartsModal) manageChartsModal.style.display = "none";
             };
             
-            document.querySelectorAll('.zoom-icon').forEach(icon => {
-                icon.addEventListener('click', handleChartZoom);
+            // Delegación de eventos para los iconos de las tarjetas
+            document.getElementById('chartsGrid').addEventListener('click', function(event) {
+                const target = event.target;
+                if (target.classList.contains('zoom-icon')) {
+                    handleChartZoom(event);
+                } else if (target.classList.contains('hide-chart-icon')) {
+                    handleChartHide(event);
+                }
+            });
+        }
+
+        function handleChartHide(event) {
+            const card = event.target.closest('.card');
+            if (card) {
+                card.style.display = 'none';
+            }
+        }
+
+        function openManageChartsModal() {
+            const hiddenChartsList = document.getElementById('hidden-charts-list');
+            const allChartCards = document.querySelectorAll('#chartsGrid .card');
+            hiddenChartsList.innerHTML = '';
+            let hiddenCount = 0;
+
+            allChartCards.forEach(card => {
+                if (card.style.display === 'none') {
+                    hiddenCount++;
+                    const chartTitle = card.querySelector('h2').textContent;
+                    const chartId = card.id;
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <span>${chartTitle}</span>
+                        <button data-chart-id="${chartId}" class="restore-chart-btn">Mostrar</button>
+                    `;
+                    hiddenChartsList.appendChild(listItem);
+                }
+            });
+
+            if (hiddenCount === 0) {
+                hiddenChartsList.innerHTML = '<p>No hay gráficos ocultos.</p>';
+            }
+
+            document.getElementById('manageChartsModal').style.display = 'flex';
+            
+            document.querySelectorAll('.restore-chart-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const chartId = this.dataset.chartId;
+                    document.getElementById(chartId).style.display = 'flex';
+                    this.parentElement.remove();
+
+                    if (hiddenChartsList.children.length === 0) {
+                        hiddenChartsList.innerHTML = '<p>No hay gráficos ocultos.</p>';
+                    }
+                });
             });
         }
         
         function handleChartZoom(event) {
-            const cardElement = event.currentTarget.closest('.card');
+            const cardElement = event.target.closest('.card');
             if (!cardElement) return;
             const modalContent = document.getElementById('zoomModalContent');
             modalContent.innerHTML = '';
